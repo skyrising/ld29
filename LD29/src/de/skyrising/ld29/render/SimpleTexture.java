@@ -5,11 +5,16 @@ import java.awt.image.BufferedImage;
 
 public class SimpleTexture implements Texture {
 	
-	private BufferedImage image;
-	private int x, y;
+	protected BufferedImage image;
+	protected int x, y;
 
 	public SimpleTexture(BufferedImage image, int x, int y) {
 		this.image = image;
+		if(image.getType() > BufferedImage.TYPE_INT_ARGB) {
+			BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			newImage.getGraphics().drawImage(image, 0, 0, null);
+			this.image = newImage;
+		}
 		this.x = x;
 		this.y = y;
 	}
@@ -47,5 +52,4 @@ public class SimpleTexture implements Texture {
 		}
 		return true;
 	}
-
 }

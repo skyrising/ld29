@@ -5,42 +5,16 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SpriteSheet implements Texture {
+public class SpriteSheet extends SimpleTexture {
 
-	private BufferedImage image;
 	private int spriteWidth;
 	private int spriteHeight;
 	private Map<Integer, Texture> sprites = new HashMap<Integer, Texture>();
 	
 	public SpriteSheet(BufferedImage image, int spriteWidth, int spriteHeight) {
-		this.image = image;
+		super(image, 0, 0);
 		this.spriteWidth = spriteWidth;
 		this.spriteHeight = spriteHeight;
-	}
-
-	@Override
-	public int getX() {
-		return 0;
-	}
-
-	@Override
-	public int getY() {
-		return 0;
-	}
-
-	@Override
-	public int getWidth() {
-		return image.getWidth();
-	}
-
-	@Override
-	public int getHeight() {
-		return image.getHeight();
-	}
-
-	@Override
-	public BufferedImage getImage() {
-		return image;
 	}
 	
 	public Texture getSprite(int index) {

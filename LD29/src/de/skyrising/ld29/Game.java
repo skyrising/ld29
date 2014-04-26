@@ -2,12 +2,21 @@ package de.skyrising.ld29;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.Random;
 
 import javax.swing.JFrame;
+
+import de.skyrising.ld29.render.ResourceManager;
+import de.skyrising.ld29.render.SpriteSheet;
+import de.skyrising.ld29.render.gui.GuiMainMenu;
+import de.skyrising.ld29.render.gui.GuiScreen;
 
 public class Game extends Canvas implements Runnable {
 	public static final boolean DEBUG = true;
@@ -25,6 +34,13 @@ public class Game extends Canvas implements Runnable {
 	public int ticksRunning;
 	public int tps = 0;
 	public int fps = 0;
+	public int width, height;
+	
+	public Random random = new Random();
+	public ResourceManager resourceManager;
+	public GuiScreen currentScreen;
+	public SpriteSheet mainSprites;
+	public int scrollX, scrollY;
 
 	public Game(JFrame frame) {
 		if (instance != null)
@@ -51,6 +67,8 @@ public class Game extends Canvas implements Runnable {
 		int frames = 0;
 		int ticks = 0;
 		long lastSec = System.currentTimeMillis();
+		
+		init();
 
 		while (running) {
 			long now = System.nanoTime();
@@ -80,7 +98,7 @@ public class Game extends Canvas implements Runnable {
 				lastSec = System.currentTimeMillis();
 				if (DEBUG && frame != null)
 					frame.setTitle(TITLE + " - " + ticks + "TPS " + frames
-							+ "FPS");
+							+ "FPS" + (currentScreen != null ? " - " + currentScreen.getClass().getSimpleName() : ""));
 				tps = ticks;
 				fps = frames;
 				ticks = 0;
@@ -92,11 +110,14 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void init() {
-		
+		resourceManager = new ResourceManager();
+		mainSprites = resourceManager.loadSpriteSheet("sprites.png", 16, 16);
+		setGuiScreen(new GuiMainMenu());
 	}
 
 	public void tick() {
-
+		if(currentScreen != null)
+			currentScreen.tick();
 	}
 
 	public void render() {
@@ -106,12 +127,18 @@ public class Game extends Canvas implements Runnable {
 			return;
 		}
 		
-		if(image == null || pixels == null || image.getWidth() != getWidth() || image.getHeight() != getHeight()) {
+		if(image == null || pixels == null || width != getWidth() || height != getHeight()) {
 			resize();
 		}
 		
 		for(int i = 0; i < pixels.length; i++)
 			pixels[i] = 0;
+		
+		Graphics2D g2d = (Graphics2D)image.getGraphics();
+		g2d.setFont(Font.decode("Monaco Bold 40"));
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		if(currentScreen != null)
+			currentScreen.render(this, g2d, width, height, scrollX, scrollY);
 		
 		Graphics g = bs.getDrawGraphics();
 		g.fillRect(0, 0, getWidth(), getHeight());
@@ -123,7 +150,16 @@ public class Game extends Canvas implements Runnable {
 	public void resize() {
 		image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
-		System.out.println("Resized to " + getWidth() + "x" + getHeight());
+		width = getWidth();
+		height = getHeight();
+		System.out.println("Resized to " + width + "x" + height);
+	}
+	
+	public void setGuiScreen(GuiScreen newScreen) {
+		if(currentScreen != null)
+			currentScreen.cleanUp();
+		currentScreen = newScreen;
+		currentScreen.init();
 	}
 
 	public void cleanUp() {
