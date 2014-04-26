@@ -1,18 +1,22 @@
 package de.skyrising.ld29;
 
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.swing.JFrame;
 
+import de.skyrising.ld29.render.GameRenderer;
 import de.skyrising.ld29.render.ResourceManager;
 import de.skyrising.ld29.render.SpriteSheet;
 import de.skyrising.ld29.render.gui.GuiMainMenu;
@@ -40,7 +44,8 @@ public class Game extends Canvas implements Runnable {
 	public ResourceManager resourceManager;
 	public GuiScreen currentScreen;
 	public SpriteSheet mainSprites;
-	public int scrollX, scrollY;
+	public GameRenderer gameRenderer;
+	public boolean paused = true;
 
 	public Game(JFrame frame) {
 		if (instance != null)
@@ -110,6 +115,7 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void init() {
+		System.out.println("Fonts: " + new ArrayList<String>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())));
 		resourceManager = new ResourceManager();
 		mainSprites = resourceManager.loadSpriteSheet("sprites.png", 16, 16);
 		setGuiScreen(new GuiMainMenu());
@@ -118,6 +124,13 @@ public class Game extends Canvas implements Runnable {
 	public void tick() {
 		if(currentScreen != null)
 			currentScreen.tick();
+		if(paused && (currentScreen == null || !currentScreen.doesPauseGame())) {
+			paused = false;
+			System.out.println("Unpaused");
+		}else if(!paused && currentScreen != null && currentScreen.doesPauseGame()) {
+			paused = true;
+			System.out.println("Paused");
+		}
 	}
 
 	public void render() {
@@ -131,14 +144,18 @@ public class Game extends Canvas implements Runnable {
 			resize();
 		}
 		
-		for(int i = 0; i < pixels.length; i++)
-			pixels[i] = 0;
-		
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
-		g2d.setFont(Font.decode("Monaco Bold 40"));
+		g2d.setFont(Util.getFont(40));
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g2d.setColor(Color.BLACK);
+		g2d.fillRect(0, 0, width, height);
+		
+		if(gameRenderer != null)
+			if(currentScreen == null || currentScreen.renderGame())
+				gameRenderer.render(this, g2d, width, height);
+		
 		if(currentScreen != null)
-			currentScreen.render(this, g2d, width, height, scrollX, scrollY);
+			currentScreen.render(this, g2d, width, height);
 		
 		Graphics g = bs.getDrawGraphics();
 		g.fillRect(0, 0, getWidth(), getHeight());
@@ -156,10 +173,22 @@ public class Game extends Canvas implements Runnable {
 	}
 	
 	public void setGuiScreen(GuiScreen newScreen) {
-		if(currentScreen != null)
+		if(currentScreen != null) {
 			currentScreen.cleanUp();
+			this.removeMouseListener(currentScreen);
+			this.removeMouseMotionListener(currentScreen);
+			this.removeKeyListener(currentScreen);
+		}
 		currentScreen = newScreen;
-		currentScreen.init();
+		if(currentScreen != null) {
+			this.addMouseListener(currentScreen);
+			this.addMouseMotionListener(currentScreen);
+			this.addKeyListener(currentScreen);
+			currentScreen.init();
+		}else {
+			if(gameRenderer == null)
+				gameRenderer = new GameRenderer();
+		}
 	}
 
 	public void cleanUp() {
