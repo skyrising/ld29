@@ -10,12 +10,18 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JFrame;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import de.skyrising.ld29.level.Level;
 import de.skyrising.ld29.render.GameRenderer;
 import de.skyrising.ld29.render.ResourceManager;
 import de.skyrising.ld29.render.SpriteSheet;
@@ -26,7 +32,7 @@ public class Game extends Canvas implements Runnable {
 	public static final boolean DEBUG = true;
 	public static final String TITLE = "Game";
 	public static final String VERSION = "0.0.0";
-	public static final boolean VSYNC = true;
+	public static final boolean VSYNC = false;
 	public static Game instance;
 
 	private static final long serialVersionUID = 1;
@@ -45,6 +51,7 @@ public class Game extends Canvas implements Runnable {
 	public GuiScreen currentScreen;
 	public SpriteSheet mainSprites;
 	public GameRenderer gameRenderer;
+	public List<Level> levels;
 	public boolean paused = true;
 
 	public Game(JFrame frame) {
@@ -117,6 +124,12 @@ public class Game extends Canvas implements Runnable {
 	public void init() {
 		System.out.println("Fonts: " + new ArrayList<String>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())));
 		resourceManager = new ResourceManager();
+		System.out.println("Loading...");
+		Gson gson = new Gson();
+		levels = gson.fromJson(new InputStreamReader(Game.class.getResourceAsStream("/res/levels.json")), new TypeToken<List<Level>>(){}.getType());
+		System.out.println("Loaded " + levels.size() + " levels");
+		for(Level l : levels)
+			System.out.println(l);
 		mainSprites = resourceManager.loadSpriteSheet("sprites.png", 16, 16);
 		setGuiScreen(new GuiMainMenu());
 	}

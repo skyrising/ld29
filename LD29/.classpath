@@ -2,5 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="lib/gson.jar" sourcepath="/Users/simon/Desktop/Development/Java/Library/Google/gson/2.2.2/gson-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/Users/simon/Desktop/Development/Java/Library/Google/gson/2.2.2/gson-javadoc.jar!/"/>
+			<attribute name="source_encoding" value="UTF-8"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

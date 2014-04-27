@@ -8,15 +8,17 @@ import java.util.List;
 
 public class Util {
 	
-	
+	private static Font f;
 	public static Font getFont(int size) {
+		if(f != null)
+			return f.deriveFont((float)size);
 		List<String> available = new ArrayList<String>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
 		if(available.contains("Helvetica Neue"))
-			return new Font("Helvetica Neue", Font.PLAIN, size);
+			return f = new Font("Helvetica Neue", Font.PLAIN, size);
 		if(available.contains("Helvetica"))
-			return new Font("Helvetica", Font.PLAIN, size);
+			return f = new Font("Helvetica", Font.PLAIN, size);
 		if(available.contains("Arial"))
-			return new Font("Arial", Font.PLAIN, size);
-		return new Font(Font.SANS_SERIF, Font.PLAIN, size);
+			return f = new Font("Arial", Font.PLAIN, size);
+		return f = new Font(Font.SANS_SERIF, Font.PLAIN, size);
 	}
 }

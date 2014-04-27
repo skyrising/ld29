@@ -10,6 +10,7 @@ import java.awt.geom.Rectangle2D;
 
 import de.skyrising.ld29.Game;
 import de.skyrising.ld29.Util;
+import de.skyrising.ld29.render.gui.GuiButton.ButtonState;
 import de.skyrising.ld29.render.gui.GuiControl.TextAlign;
 
 public class GuiMainMenu extends GuiScreen {
@@ -17,7 +18,7 @@ public class GuiMainMenu extends GuiScreen {
 	public GuiMainMenu() {
 		Font f = Util.getFont(26);
 		controlList.add(new GuiButton(this, 0, 0, 0, 150, 30, "NEW GAME")
-		.setDrawBackground(false).setFont(f).setTextAlign(TextAlign.LEFT));
+		.setDrawBackground(false).setFont(f).setState(ButtonState.HOVER).setTextAlign(TextAlign.LEFT));
 		controlList.add(new GuiButton(this, 1, 0, 0, 150, 30, "LOAD GAME").
 				setDrawBackground(false).setFont(f).setTextAlign(TextAlign.LEFT));
 		controlList.add(new GuiButton(this, 2, 0, 0, 150, 30, "OPTIONS")
@@ -44,11 +45,11 @@ public class GuiMainMenu extends GuiScreen {
 		g2d.setColor(new Color(0xFFFFBA));
 		g2d.setBackground(new Color(0xFF9C61));
 		Rectangle2D bounds = g2d.getFontMetrics().getStringBounds("GO DEEPER!", g2d);
-		drawStringWithShadow(g2d, "GO DEEPER!", (int)(game.width-bounds.getWidth())/2, game.height/10 + (int)bounds.getHeight()/2);
+		drawStringWithShadow(g2d, "GO DEEPER!", (int)(game.width-bounds.getWidth())/2, game.height/10 + (int)bounds.getHeight()/2, 3);
 		
 		g2d.setFont(Util.getFont(game.height/12).deriveFont(Font.BOLD));
 		Rectangle2D bounds1 = g2d.getFontMetrics().getStringBounds("LUDUM DARE", g2d);
-		drawStringWithShadow(g2d, "LUDUM DARE", (int)(game.width-bounds1.getWidth())/2, game.height/10 + (int)(bounds.getHeight()*1.2));
+		drawStringWithShadow(g2d, "LUDUM DARE", (int)(game.width-bounds1.getWidth())/2, game.height/10 + (int)(bounds.getHeight()*1.2), 3);
 
 		for(GuiControl c : controlList)
 			c.setX((int)(game.width*0.03)).setY((int)(game.height-5*(c.getHeight()+5)+c.getId()*(c.getHeight()+5)-game.height*0.03));

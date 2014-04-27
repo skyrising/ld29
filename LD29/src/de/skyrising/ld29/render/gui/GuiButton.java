@@ -19,7 +19,7 @@ public class GuiButton extends GuiControl {
 	protected String text;
 	protected Texture texture;
 	protected boolean drawBackground = true;
-	protected int bgColor = 0x000000;
+	protected int bgColor = 0x888888;
 	protected int textColor = 0xFFFFFF;
 	protected Font font = Util.getFont(22);
 	protected ButtonState lastState = ButtonState.NORMAL;
@@ -70,12 +70,13 @@ public class GuiButton extends GuiControl {
 		g2d.setFont(font);
 		Rectangle2D bounds = g2d.getFontMetrics().getStringBounds(text, g2d);
 		g2d.setColor(new Color(textColor));
+		g2d.setBackground(new Color(bgColor));
 		if(textAlign == TextAlign.LEFT)
-			g2d.drawString(text, x, (float) (y + (this.height + bounds.getHeight()) / 2));
+			drawString(g2d, text, x, (int) (y + (this.height + bounds.getHeight()) / 2), currentState == ButtonState.HOVER, 1);
 		if(textAlign == TextAlign.CENTER)
-			g2d.drawString(text, (float) (x + (this.width - bounds.getWidth()) / 2), (float) (y + (this.height + bounds.getHeight()) / 2));
+			drawString(g2d, text, (int) (x + (this.width - bounds.getWidth()) / 2), (int) (y + (this.height + bounds.getHeight()) / 2), currentState == ButtonState.HOVER, 1);
 		if(textAlign == TextAlign.RIGHT)
-			g2d.drawString(text, (float) (x + (this.width - bounds.getWidth())), (float) (y + (this.height + bounds.getHeight()) / 2));
+			drawString(g2d, text, (int) (x + (this.width - bounds.getWidth())), (int) (y + (this.height + bounds.getHeight()) / 2), currentState == ButtonState.HOVER, 1);
 	}
 
 	protected void stateChanged() {
