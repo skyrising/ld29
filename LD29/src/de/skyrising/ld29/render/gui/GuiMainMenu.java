@@ -10,21 +10,10 @@ import java.awt.geom.Rectangle2D;
 
 import de.skyrising.ld29.Game;
 import de.skyrising.ld29.Util;
-import de.skyrising.ld29.render.gui.GuiButton.ButtonState;
-import de.skyrising.ld29.render.gui.GuiControl.TextAlign;
 
 public class GuiMainMenu extends GuiScreen {
 	
 	public GuiMainMenu() {
-		Font f = Util.getFont(26);
-		controlList.add(new GuiButton(this, 0, 0, 0, 150, 30, "NEW GAME")
-		.setDrawBackground(false).setFont(f).setState(ButtonState.HOVER).setTextAlign(TextAlign.LEFT));
-		controlList.add(new GuiButton(this, 1, 0, 0, 150, 30, "LOAD GAME").
-				setDrawBackground(false).setFont(f).setTextAlign(TextAlign.LEFT));
-		controlList.add(new GuiButton(this, 2, 0, 0, 150, 30, "OPTIONS")
-		.setDrawBackground(false).setFont(f).setTextAlign(TextAlign.LEFT));
-		controlList.add(new GuiButton(this, 3, 0, 0, 150, 30, "QUIT")
-		.setDrawBackground(false).setFont(f).setTextAlign(TextAlign.LEFT));
 	}
 
 	@Override
@@ -51,6 +40,12 @@ public class GuiMainMenu extends GuiScreen {
 		Rectangle2D bounds1 = g2d.getFontMetrics().getStringBounds("LUDUM DARE", g2d);
 		drawStringWithShadow(g2d, "LUDUM DARE", (int)(game.width-bounds1.getWidth())/2, game.height/10 + (int)(bounds.getHeight()*1.2), 3);
 
+
+		Rectangle2D bounds3 = g2d.getFontMetrics().getStringBounds("Click to play", g2d);
+		g2d.setColor(Color.WHITE);
+		g2d.setBackground(Color.GRAY);
+		drawStringWithShadow(g2d, "Click to play", (int)(game.width-bounds3.getWidth())/2, (int)(game.height/2 + bounds3.getHeight()), 3);
+		
 		for(GuiControl c : controlList)
 			c.setX((int)(game.width*0.03)).setY((int)(game.height-5*(c.getHeight()+5)+c.getId()*(c.getHeight()+5)-game.height*0.03));
 		super.render(game, g2d, width, height);
@@ -71,6 +66,6 @@ public class GuiMainMenu extends GuiScreen {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		super.mouseClicked(e);
-		Game.instance.setGuiScreen(null);
+		Game.instance.startGame(0);
 	}
 }

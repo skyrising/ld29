@@ -7,10 +7,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,21 +22,22 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
+import de.skyrising.ld29.entity.Entity;
+import de.skyrising.ld29.entity.EntityPlayer;
 import de.skyrising.ld29.level.Level;
 import de.skyrising.ld29.render.GameRenderer;
 import de.skyrising.ld29.render.ResourceManager;
 import de.skyrising.ld29.render.SpriteSheet;
+import de.skyrising.ld29.render.gui.GuiGameOver;
 import de.skyrising.ld29.render.gui.GuiMainMenu;
 import de.skyrising.ld29.render.gui.GuiScreen;
 
-public class Game extends Canvas implements Runnable {
+public class Game extends Canvas implements Runnable, MouseListener, MouseMotionListener, KeyListener{
 	public static final boolean DEBUG = true;
 	public static final String TITLE = "Game";
 	public static final String VERSION = "0.0.0";
 	public static final boolean VSYNC = false;
+	public static final float PLAYER_SPEED = 2;
 	public static Game instance;
 
 	private static final long serialVersionUID = 1;
@@ -52,7 +57,14 @@ public class Game extends Canvas implements Runnable {
 	public SpriteSheet mainSprites;
 	public GameRenderer gameRenderer;
 	public List<Level> levels;
+	public int levelNum;
+	public Level level;
 	public boolean paused = true;
+	public EntityPlayer player;
+	
+	public boolean keyLeft = false;
+	public boolean keyJump = false;
+	public boolean keyRight = false;
 
 	public Game(JFrame frame) {
 		if (instance != null)
@@ -125,8 +137,8 @@ public class Game extends Canvas implements Runnable {
 		System.out.println("Fonts: " + new ArrayList<String>(Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames())));
 		resourceManager = new ResourceManager();
 		System.out.println("Loading...");
-		Gson gson = new Gson();
-		levels = gson.fromJson(new InputStreamReader(Game.class.getResourceAsStream("/res/levels.json")), new TypeToken<List<Level>>(){}.getType());
+		random.setSeed(29);
+		levels = Level.randomLevels(10);
 		System.out.println("Loaded " + levels.size() + " levels");
 		for(Level l : levels)
 			System.out.println(l);
@@ -137,12 +149,29 @@ public class Game extends Canvas implements Runnable {
 	public void tick() {
 		if(currentScreen != null)
 			currentScreen.tick();
-		if(paused && (currentScreen == null || !currentScreen.doesPauseGame())) {
-			paused = false;
-			System.out.println("Unpaused");
-		}else if(!paused && currentScreen != null && currentScreen.doesPauseGame()) {
+		
+		if(!paused && currentScreen != null && currentScreen.doesPauseGame()) {
 			paused = true;
 			System.out.println("Paused");
+		}else if(paused && (currentScreen == null || !currentScreen.doesPauseGame())) {
+			paused = false;
+			System.out.println("Unpaused");
+			if(player == null)
+				startGame(0);
+		}
+		if(paused)
+			Entity.entities.clear();
+		if(gameRenderer != null)
+			gameRenderer.tick();
+		if(!paused && player != null) {
+			if(keyLeft && player.vX > -1)
+				player.vX -= PLAYER_SPEED;
+			if(keyRight && player.vX < 1)
+				player.vX += PLAYER_SPEED;
+			if(keyJump)
+				player.jump = true;
+			/*for(Entity e : Entity.entities)
+				e.tick();*/
 		}
 	}
 
@@ -207,9 +236,102 @@ public class Game extends Canvas implements Runnable {
 	public void cleanUp() {
 
 	}
+	
+	public void startGame(int level) {
+		gameRenderer = new GameRenderer();
+		levelNum = level-1;
+		nextLevel();
+		this.addKeyListener(this);
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
+		player = new EntityPlayer();
+		player.posX = (float) (8 - player.getBounds().getCenterX());
+		if(currentScreen != null)
+			setGuiScreen(null);
+	}
+	
+	public void stopGame() {
+		player = null;
+		setGuiScreen(new GuiGameOver(gameRenderer.time));
+	}
 
 	public static void main(String[] args) {
 		JFrame frame = new JFrame();
 		new Game(frame).run();
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT)
+			keyLeft = true;
+		if(e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT)
+			keyRight = true;
+		if(e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_SPACE)
+			keyJump = true;
+		if(e.getKeyCode() == KeyEvent.VK_S)
+			player.posY = 0;
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT)
+			keyLeft = false;
+		if(e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT)
+			keyRight = false;
+		if(e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_SPACE)
+			keyJump = false;
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		if(paused)
+			return;
+		player.shooting = false;
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		if(paused)
+			return;
+		player.shooting = true;
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		if(paused)
+			return;
+		player.shooting = false;
+	}
+
+	public void nextLevel() {
+		levelNum++;
+		if(levelNum < levels.size()) {
+			level = levels.get(levelNum);
+			if(gameRenderer == null)
+				gameRenderer = new GameRenderer();
+			gameRenderer.levelDelay = 100;
+		}
+		else
+			stopGame();
 	}
 }
